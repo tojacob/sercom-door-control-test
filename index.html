@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/water.css@2/out/water.css">
+  <title>Door States</title>
+  <style>
+    section {
+      display: block;
+      max-width: 425px;
+      width: 100%;
+      margin: 64px auto;
+    }
+
+    input.submit {
+      margin-top: 32px;
+    }
+
+    code {
+      display: block;
+      margin-top: 32px;
+    }
+  </style>
+</head>
+
+<body>
+  <section>
+    <form id="doors-form">
+      <h2>Door 1</h2>
+      <div>
+        <label for="door_1_open">Open</label>
+        <input id="door_1_open" name="Puerta1" type="radio" value="true">
+        <label for="door_1_close">Close</label>
+        <input id="door_1_close" name="Puerta1" type="radio" value="false" checked>
+      </div>
+      <hr>
+      <h2>Door 2</h2>
+      <div>
+        <label for="door_2_open">Open</label>
+        <input id="door_2_open" name="Puerta2" type="radio" value="true">
+        <label for="door_2_close">Close</label>
+        <input id="door_2_close" name="Puerta2" type="radio" value="false" checked>
+      </div>
+      <hr>
+      <h2>Door 3</h2>
+      <div>
+        <label for="door_3_open">Open</label>
+        <input id="door_3_open" name="Puerta3" type="radio" value="true">
+        <label for="door_3_close">Close</label>
+        <input id="door_3_close" name="Puerta3" type="radio" value="false" checked>
+      </div>
+      <hr>
+      <h2>Door 4</h2>
+      <div>
+        <label for="door_4_open">Open</label>
+        <input id="door_4_open" name="Puerta4" type="radio" value="true">
+        <label for="door_4_close">Close</label>
+        <input id="door_4_close" name="Puerta4" type="radio" value="false" checked>
+      </div>
+      <hr>
+      <h2>Auto close?</h2>
+      <div>
+        <label for="auto_close_true">true</label>
+        <input id="auto_close_true" name="autoClose" type="radio" value="true">
+        <label for="auto_close_false">false</label>
+        <input id="auto_close_false" name="autoClose" type="radio" value="false" checked>
+      </div>
+      <hr>
+      <div>
+        <label for="code">
+          <h2>Code</h2>
+        </label>
+        <input name="code" type="text">
+      </div>
+      <hr>
+      <input class="submit" type="submit" value="Update">
+    </form>
+    <code>
+      Response: <span id="response"></span>
+    </code>
+  </section>
+
+  <script>
+    const form = document.getElementById('doors-form');
+    const responseElement = document.getElementById('response');
+    const url = 'https://us-east1-sercom-01.cloudfunctions.net/doorsContext/door-state';
+    const headers = {
+      'Accept': 'application/json, text/plain, */*',
+      'Content-Type': 'application/json'
+    }
+
+    function submit(e) {
+      e.preventDefault();
+      responseElement.innerText = 'Updating...';
+      const formData = new FormData(e.target);
+      const formObject = Object.fromEntries(formData.entries());
+      const body = {
+        code: formObject.code,
+        update: {
+          autoClose: formObject.autoClose === 'true' ? true : false,
+          states: {
+            Puerta1: formObject.Puerta1 === 'true' ? true : false,
+            Puerta2: formObject.Puerta2 === 'true' ? true : false,
+            Puerta3: formObject.Puerta3 === 'true' ? true : false,
+            Puerta4: formObject.Puerta4 === 'true' ? true : false
+          }
+        }
+      }
+
+      fetch(url, { method: 'POST', body: JSON.stringify(body), headers: headers })
+        .then((response) => response.text())
+        .then((txt) => {
+          responseElement.innerText = txt;
+        })
+        .catch((error) => {
+          responseElement.innerText = 'Unexpected error';
+        })
+    }
+
+    form.addEventListener("submit", submit);
+
+    fetch(url, {
+      method: 'POST',
+      body: JSON.stringify({ reset: true }),
+      headers: headers
+    })
+      .then((response) => response.text())
+      .then((txt) => {
+        responseElement.innerText = txt;
+      })
+      .catch((error) => {
+        responseElement.innerText = 'Unexpected error';
+      })
+  </script>
+</body>
+
+</html>
